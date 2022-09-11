@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_host"
+    app:startDestination="@id/loginFragment">
+
+    <fragment
+        android:id="@+id/loginFragment"
+        android:name="com.example.Bank.uiApp.login.LoginFragment"
+        android:label="fragment_login"
+        tools:layout="@layout/fragment_login" >
+        <action
+            android:id="@+id/action_loginFragment_to_registerFragment"
+            app:destination="@id/registerFragment" />
+        <action
+            android:id="@+id/action_loginFragment_to_categoriesFragment"
+            app:destination="@id/categoriesFragment"
+            app:popUpTo="@id/categoriesFragment"
+            app:popUpToInclusive="true" />
+    </fragment>
+    <fragment
+        android:id="@+id/registerFragment"
+        android:name="com.example.Bank.uiApp.registration.RegisterFragment"
+        android:label="fragment_register"
+        tools:layout="@layout/fragment_register" >
+        <action
+            android:id="@+id/action_registerFragment_to_loginFragment"
+            app:destination="@id/loginFragment" />
+        <action
+            android:id="@+id/action_registerFragment_to_personalInformation"
+            app:destination="@id/personalInformation" />
+    </fragment>
+    <fragment
+        android:id="@+id/personalInformation"
+        android:name="com.example.Bank.PersonalInformation"
+        android:label="fragment_personal_information"
+        tools:layout="@layout/fragment_personal_information" />
+    <fragment
+        android:id="@+id/categoriesFragment"
+        android:name="com.example.Bank.uiApp.categories.CategoriesFragment"
+        android:label="fragment_categories"
+        tools:layout="@layout/fragment_categories" >
+        <action
+            android:id="@+id/action_categoriesFragment_to_productFragment2"
+            app:destination="@id/productFragment" />
+        <action
+            android:id="@+id/action_categoriesFragment_to_loginFragment"
+            app:destination="@id/loginFragment"
+            app:popUpTo="@id/loginFragment"
+            app:popUpToInclusive="true" />
+    </fragment>
+    <fragment
+        android:id="@+id/productFragment"
+        android:name="com.example.Bank.uiApp.products.ProductFragment"
+        android:label="fragment_product"
+        tools:layout="@layout/fragment_product" >
+        <argument
+            android:name="categoryID"
+            app:argType="integer" />
+        <action
+            android:id="@+id/action_productFragment_to_productDetailsFragment"
+            app:destination="@id/productDetailsFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/productDetailsFragment"
+        android:name="com.example.Bank.uiApp.products.ProductDetailsFragment"
+        android:label="fragment_product_details"
+        tools:layout="@layout/fragment_product_details" >
+        <argument
+            android:name="image"
+            app:argType="string" />
+        <argument
+            android:name="nameCategory"
+            app:argType="string" />
+        <argument
+            android:name="priceCategory"
+            app:argType="string" />
+        <argument
+            android:name="productID"
+            app:argType="integer" />
+
+    </fragment>
+    <fragment
+        android:id="@+id/cartsFragment"
+        android:name="com.example.Bank.uiApp.carts.CartsFragment"
+        android:label="fragment_carts"
+        tools:layout="@layout/fragment_carts" >
+        <action
+            android:id="@+id/action_cartsFragment_to_categoriesFragment"
+            app:destination="@id/categoriesFragment"
+            app:popUpTo="@id/cartsFragment"
+            app:popUpToInclusive="true" />
+    </fragment>
+    <fragment
+        android:id="@+id/profileFragment"
+        android:name="com.example.Bank.uiApp.ProfileFragment"
+        android:label="fragment_profile"
+        tools:layout="@layout/fragment_profile" >
+        <action
+            android:id="@+id/action_profileFragment_to_categoriesFragment"
+            app:destination="@id/categoriesFragment"
+            app:popUpTo="@id/profileFragment"
+            app:popUpToInclusive="true" />
+    </fragment>
+</navigation>
