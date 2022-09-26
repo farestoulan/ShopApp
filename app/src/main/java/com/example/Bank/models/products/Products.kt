@@ -6,7 +6,7 @@ class Products(
     @SerializedName("status")
     var status: Boolean,
     @SerializedName("message")
-    var message: String,
+    var message: String?,
     @SerializedName("data")
     var data: ProductCategories,
 )

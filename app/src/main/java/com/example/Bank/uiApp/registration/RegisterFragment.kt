@@ -1,16 +1,20 @@
 package com.example.Bank.uiApp.registration
+
 import android.os.Bundle
 import android.util.Patterns
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelProviders
 import androidx.navigation.fragment.findNavController
 import com.example.Bank.R
 import com.example.Bank.api.RetrofitClient
 import com.example.Bank.databinding.FragmentRegisterBinding
 import com.example.Bank.models.userdata.LoginRespons
 import com.example.Bank.storage.SharedPrefManager
+import com.example.Bank.viewModel.MainViewModel
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import retrofit2.Call
 import retrofit2.Callback
@@ -19,15 +23,18 @@ import retrofit2.Response
 
 class RegisterFragment : Fragment() {
 
-    private  var _binding: FragmentRegisterBinding? = null
+    private var _binding: FragmentRegisterBinding? = null
     private val binding get() = _binding!!
+
+    private lateinit var viewModel: MainViewModel
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
+        savedInstanceState: Bundle?,
     ): View? {
         _binding = FragmentRegisterBinding.inflate(inflater, container, false)
         val view = binding.root
+        viewModel = ViewModelProvider(this)[MainViewModel::class.java]
 
         emailFocusListener()
 
@@ -78,37 +85,20 @@ class RegisterFragment : Fragment() {
             binding.etPhone.requestFocus()
             return
         }
-        val call = RetrofitClient
-            .instance
-            ?.api
-            ?.createUser(email, password, name, phone)
-        call?.enqueue(object : Callback<LoginRespons?> {
-            override fun onResponse(
-                call: Call<LoginRespons?>,
-                response: Response<LoginRespons?>
-            ) {
 
-                if (response.code() == 200) {
-                    val dr = response.body()
-                    SharedPrefManager.getInstance(requireContext())
-                        ?.saveUser(dr!!.data)
-                    MaterialAlertDialogBuilder(requireContext()).setTitle("خد بالك يا جدع")
-                        .setMessage(dr?.message).setPositiveButton("OK") {_,_ ->
-                        }.show()
+        viewModel.createUser(email, password, name, phone)
+            .observe(viewLifecycleOwner) { loginResponse ->
+                val msg = loginResponse?.message
 
+                MaterialAlertDialogBuilder(requireContext()).setTitle("").setMessage(msg)
+                    .setPositiveButton("OK") { _, _ ->
 
-
-                }
-            }
-
-            override fun onFailure(call: Call<LoginRespons?>, t: Throwable) {
-                MaterialAlertDialogBuilder(requireContext()).setTitle("خد بالك يا جدع")
-                    .setMessage(t.message).setPositiveButton("OK") {_,_ ->
                     }.show()
 
 
             }
-        })
+
+
     }
 
 
@@ -117,21 +107,18 @@ class RegisterFragment : Fragment() {
         _binding = null
 
     }
-    private fun emailFocusListener()
-    {
+
+    private fun emailFocusListener() {
         binding.etEmailRegister.setOnFocusChangeListener { _, focused ->
-            if(!focused)
-            {
+            if (!focused) {
                 binding.emailContainer.helperText = validEmail()
             }
         }
     }
 
-    private fun validEmail(): String?
-    {
+    private fun validEmail(): String? {
         val emailText = binding.etEmailRegister.text.toString()
-        if(!Patterns.EMAIL_ADDRESS.matcher(emailText).matches())
-        {
+        if (!Patterns.EMAIL_ADDRESS.matcher(emailText).matches()) {
             return "Invalid Email Address"
         }
         return null

@@ -5,6 +5,8 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.GridLayoutManager
 import com.example.Bank.adapter.AdapterProduct
@@ -12,6 +14,7 @@ import com.example.Bank.api.RetrofitClient
 import com.example.Bank.databinding.FragmentProductBinding
 import com.example.Bank.models.products.ListOfProduct
 import com.example.Bank.models.products.Products
+import com.example.Bank.viewModel.MainViewModel
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import retrofit2.Call
 import retrofit2.Callback
@@ -19,9 +22,9 @@ import retrofit2.Response
 
 
 class ProductFragment : Fragment() {
-    var categoryID: Int = 0
+    private var categoryID: Int = 0
+    private lateinit var viewModel: MainViewModel
     private var _binding: FragmentProductBinding? = null
-
     private val binding get() = _binding!!
 
 
@@ -34,59 +37,45 @@ class ProductFragment : Fragment() {
 
         categoryID = ProductFragmentArgs.fromBundle(requireArguments()).categoryID
 
+        val progressBar = binding.progressBarProducts
+        progressBar.visibility = View.VISIBLE
+        val recyclerView = binding.recyclerViewOfProducts
+        val gridLayoutManagerWithTwoColumns = GridLayoutManager(requireContext(), 2)
+        recyclerView.layoutManager = gridLayoutManagerWithTwoColumns
+        recyclerView.setHasFixedSize(true)
 
-        val call = RetrofitClient.instance?.api?.getListOfProducts(categoryID)
-        call?.enqueue(object : Callback<Products?> {
-            override fun onResponse(call: Call<Products?>, response: Response<Products?>) {
-                if (response.isSuccessful) {
-
-                    val adapterProduct =
-                        AdapterProduct(requireContext(), response.body()!!.data.result)
-
-
-                    // Create a grid layout with two columns
-                    val  layoutManager = GridLayoutManager(requireContext(), 2)
+        viewModel = ViewModelProvider(this)[MainViewModel::class.java]
+        viewModel.getListOfProducts(categoryID).observe(viewLifecycleOwner, Observer{ products ->
 
 
-                    val recyclerView = binding.recyclerViewOfProducts
-                    recyclerView.adapter = adapterProduct
-                    recyclerView.layoutManager = layoutManager
-                    recyclerView.setHasFixedSize(true)
-                    val progressBar = binding.progressBarProducts
-                    progressBar.visibility =View.GONE
+            val dataResults = products?.data?.result
+            val adapterProduct =
+                AdapterProduct(requireContext(), dataResults)
+
+            recyclerView.adapter = adapterProduct
 
 
+            progressBar.visibility = View.GONE
 
-                    adapterProduct.setClickListener(object : AdapterProduct.ItemClickListener {
-                        override fun onItemClick(
-                            view: View?,
-                            position: Int,
-                            data: List<ListOfProduct?>?,
-                        ) {
-                            val action =
-                                ProductFragmentDirections.actionProductFragmentToProductDetailsFragment(
-                                    data?.get(position)!!.image,
-                                    data[position]?.name.toString(),
-                                    data[position]?.price.toString(),
-                                    data[position]?.id!!
 
-                                )
-                            findNavController().navigate(action)
-                        }
-                    })
+            adapterProduct.setClickListener(object : AdapterProduct.ItemClickListener {
+                override fun onItemClick(
+                    view: View?,
+                    position: Int,
+                    data: List<ListOfProduct?>?,
+                ) {
+                    val action =
+                        ProductFragmentDirections.actionProductFragmentToProductDetailsFragment(
+                            data?.get(position)!!.image,
+                            data[position]?.name.toString(),
+                            data[position]?.price.toString(),
+                            data[position]?.id!!
 
-                } else {
-                    MaterialAlertDialogBuilder(requireContext()).setTitle("انتبه يا جدع ")
-                        .setMessage(response.body()?.message).setPositiveButton("OK") { _, _ ->
-                        }.show()
+                        )
+                    findNavController().navigate(action)
                 }
-            }
+            })
 
-            override fun onFailure(call: Call<Products?>, t: Throwable) {
-                MaterialAlertDialogBuilder(requireContext()).setTitle("انتبه يا جدع ")
-                    .setMessage(t.message).setPositiveButton("OK") { _, _ ->
-                    }.show()
-            }
         })
 
 

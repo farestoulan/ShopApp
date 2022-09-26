@@ -6,25 +6,27 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
 import com.bumptech.glide.Glide
 import com.example.Bank.api.RetrofitClient
 import com.example.Bank.databinding.FragmentProductDetailsBinding
 import com.example.Bank.models.addcarts.AddCarts
+import com.example.Bank.viewModel.MainViewModel
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 
 
 class ProductDetailsFragment : Fragment() {
+    private lateinit var viewModel: MainViewModel
     private var _binding: FragmentProductDetailsBinding? = null
     private val binding get() = _binding!!
     private var image: String = ""
     private var name: String = ""
     private var price: String = ""
-    private var productID:Int = 0
-
-
-
+    private var productID: Int = 0
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -32,15 +34,16 @@ class ProductDetailsFragment : Fragment() {
     ): View? {
         _binding = FragmentProductDetailsBinding.inflate(inflater, container, false)
         val view = binding.root
+        viewModel = ViewModelProvider(this)[MainViewModel::class.java]
 
         image = ProductDetailsFragmentArgs.fromBundle(requireArguments()).image
         name = ProductDetailsFragmentArgs.fromBundle(requireArguments()).nameCategory
         price = ProductDetailsFragmentArgs.fromBundle(requireArguments()).priceCategory
-        productID =ProductDetailsFragmentArgs.fromBundle(requireArguments()).productID
+        productID = ProductDetailsFragmentArgs.fromBundle(requireArguments()).productID
 
-        Glide.with(requireContext()).load(image).into( binding.imgDescription)
+        Glide.with(requireContext()).load(image).into(binding.imgDescription)
         binding.tvNameCategory.text = name
-        binding.tvPrice.text ="Price : $price"
+        binding.tvPrice.text = "Price : $price"
 
         binding.btnAddCart.setOnClickListener {
             addCarts()
@@ -50,22 +53,19 @@ class ProductDetailsFragment : Fragment() {
         return view
     }
 
-    private fun addCarts(){
-        val call = RetrofitClient.instance?.api?.addCarts(productID)
-        call?.enqueue(object :Callback<AddCarts?>{
-            override fun onResponse(call: Call<AddCarts?>, response: Response<AddCarts?>) {
-                if (response.isSuccessful){
+    private fun addCarts() {
+        viewModel.addCarts(productID).observe(viewLifecycleOwner, Observer  {addCarts ->
 
-                    Toast.makeText(requireContext(),response.body()?.message,Toast.LENGTH_LONG).show()
+            val msg = addCarts?.message
 
-                }
-            }
 
-            override fun onFailure(call: Call<AddCarts?>, t: Throwable) {
+            MaterialAlertDialogBuilder(requireContext()).setTitle("").setMessage(msg)
+                .setPositiveButton("OK") { _, _ ->
 
-                Toast.makeText(requireContext(),t.message,Toast.LENGTH_LONG).show()
-            }
+                }.show()
+
         })
+
     }
 
     override fun onDestroy() {

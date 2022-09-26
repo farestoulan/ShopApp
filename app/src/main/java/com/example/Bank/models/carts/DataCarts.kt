@@ -7,9 +7,9 @@ data class DataCarts(
     var cart_items: List<ListOfCartItems>,
 
     @SerializedName("sub_total")
-    var sub_total: Int,
+    var sub_total: Double,
 
     @SerializedName("total")
-    var total: Int,
+    var total: Double,
 
 )

@@ -8,10 +8,10 @@ data class Products(
     var id :Int,
 
     @SerializedName("price")
-    var price :Int,
+    var price :Double,
 
     @SerializedName("old_price")
-    var old_price :Int,
+    var old_price :Double,
 
     @SerializedName("discount")
     var discount :Int,

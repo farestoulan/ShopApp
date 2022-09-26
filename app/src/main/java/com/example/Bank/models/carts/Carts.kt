@@ -7,7 +7,7 @@ data class Carts(
     var status: Boolean,
 
     @SerializedName("message")
-    var message: String,
+    var message: String?,
 
     @SerializedName("data")
     var data:DataCarts

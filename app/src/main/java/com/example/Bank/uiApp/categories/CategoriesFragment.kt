@@ -6,6 +6,8 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.activity.addCallback
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import com.example.Bank.R
 import com.example.Bank.adapter.AdapterCategory
@@ -13,6 +15,8 @@ import com.example.Bank.api.RetrofitClient
 import com.example.Bank.databinding.FragmentCategoriesBinding
 import com.example.Bank.models.categories.Categories
 import com.example.Bank.models.categories.ListOfCategories
+import com.example.Bank.repository.Repository
+import com.example.Bank.viewModel.MainViewModel
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import retrofit2.Call
 import retrofit2.Callback
@@ -22,8 +26,8 @@ import retrofit2.Response
 class CategoriesFragment : Fragment() {
 
     private var _binding: FragmentCategoriesBinding? = null
-
     private val binding get() = _binding!!
+    private lateinit var viewModel: MainViewModel
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?,
@@ -40,57 +44,34 @@ class CategoriesFragment : Fragment() {
 
                 }.show()
         }
-        val call = RetrofitClient
-            .instance?.api?.getListOfCategories()
-        call?.enqueue(object : Callback<Categories?> {
-            override fun onResponse(
-                call: Call<Categories?>,
-                response: Response<Categories?>,
-            ) {
-                if (response.code() == 200) {
-                    val adapterCategory = AdapterCategory(requireContext(),
-                        response.body()!!.data.results)
+        val progressBar = binding.progressBar
+        progressBar.visibility = View.VISIBLE
+        viewModel = ViewModelProvider(this)[MainViewModel::class.java]
+        viewModel.getListOfCategories().observe(viewLifecycleOwner){ categories ->
+            progressBar.visibility = View.GONE
 
-                    val recyclerView = binding.recyclerViewCategories
+            val dataResults = categories?.data?.results
+            val adapterCategory = AdapterCategory(requireContext(),
+                dataResults!!)
+            val recyclerView = binding.recyclerViewCategories
+            recyclerView.adapter = adapterCategory
 
-                    recyclerView.adapter = adapterCategory
-                    val progressBar = binding.progressBar
-                    progressBar.visibility = View.GONE
+            adapterCategory.setClickListener(object : AdapterCategory.ItemClickListener {
+                override fun onItemClick(
+                    view: View?,
+                    position: Int,
+                    data: List<ListOfCategories>,
+                ) {
 
-                    adapterCategory.setClickListener(object : AdapterCategory.ItemClickListener {
-                        override fun onItemClick(
-                            view: View?,
-                            position: Int,
-                            data: List<ListOfCategories>,
-                        ) {
+                    val action =
+                        CategoriesFragmentDirections.actionCategoriesFragmentToProductFragment2(
+                            data[position].id
+                        )
+                    findNavController().navigate(action)
 
-                            val action =
-                                CategoriesFragmentDirections.actionCategoriesFragmentToProductFragment2(
-                                    data[position].id
-                                )
-                            findNavController().navigate(action)
-
-                        }
-                    })
-                } else {
-                    MaterialAlertDialogBuilder(requireContext()).setTitle("انتبه  ")
-                        .setMessage(response.message()).setPositiveButton("OK") { _, _ ->
-                        }.show()
                 }
-
-            }
-
-            override fun onFailure(call: Call<Categories?>, t: Throwable) {
-                MaterialAlertDialogBuilder(requireContext()).setTitle("انتبه يا جدع ")
-                    .setMessage(t.message).setPositiveButton("OK") { _, _ ->
-                    }.show()
-            }
-
-        })
-
-
-
-
+            })
+        }
 
         return view
     }
