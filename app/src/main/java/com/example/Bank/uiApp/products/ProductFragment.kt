@@ -45,38 +45,40 @@ class ProductFragment : Fragment() {
         recyclerView.setHasFixedSize(true)
 
         viewModel = ViewModelProvider(this)[MainViewModel::class.java]
-        viewModel.getListOfProducts(categoryID).observe(viewLifecycleOwner, Observer{ products ->
 
+        viewModel.getListOfProducts(categoryID)
 
-            val dataResults = products?.data?.result
-            val adapterProduct =
-                AdapterProduct(requireContext(), dataResults)
+        viewModel.myResponseGetListOfProducts.observe(viewLifecycleOwner) { products ->
 
-            recyclerView.adapter = adapterProduct
+            if (products != null) {
 
+                val dataResults = products.data.result
+                val adapterProduct = AdapterProduct(requireContext(), dataResults)
 
-            progressBar.visibility = View.GONE
+                recyclerView.adapter = adapterProduct
 
+                progressBar.visibility = View.GONE
 
-            adapterProduct.setClickListener(object : AdapterProduct.ItemClickListener {
-                override fun onItemClick(
-                    view: View?,
-                    position: Int,
-                    data: List<ListOfProduct?>?,
-                ) {
-                    val action =
-                        ProductFragmentDirections.actionProductFragmentToProductDetailsFragment(
-                            data?.get(position)!!.image,
-                            data[position]?.name.toString(),
-                            data[position]?.price.toString(),
-                            data[position]?.id!!
+                adapterProduct.setClickListener(object : AdapterProduct.ItemClickListener {
+                    override fun onItemClick(
+                        view: View?,
+                        position: Int,
+                        data: List<ListOfProduct?>?,
+                    ) {
+                        val action =
+                            ProductFragmentDirections.actionProductFragmentToProductDetailsFragment(
+                                data?.get(position)!!.image,
+                                data[position]?.name.toString(),
+                                data[position]?.price.toString(),
+                                data[position]?.id!!
 
-                        )
-                    findNavController().navigate(action)
-                }
-            })
+                            )
+                        findNavController().navigate(action)
+                    }
+                })
 
-        })
+            }
+        }
 
 
         return view

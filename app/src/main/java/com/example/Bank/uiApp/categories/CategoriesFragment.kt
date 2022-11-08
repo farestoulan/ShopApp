@@ -16,6 +16,7 @@ import com.example.Bank.databinding.FragmentCategoriesBinding
 import com.example.Bank.models.categories.Categories
 import com.example.Bank.models.categories.ListOfCategories
 import com.example.Bank.repository.Repository
+import com.example.Bank.uiApp.filter
 import com.example.Bank.viewModel.MainViewModel
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import retrofit2.Call
@@ -47,30 +48,46 @@ class CategoriesFragment : Fragment() {
         val progressBar = binding.progressBar
         progressBar.visibility = View.VISIBLE
         viewModel = ViewModelProvider(this)[MainViewModel::class.java]
-        viewModel.getListOfCategories().observe(viewLifecycleOwner){ categories ->
-            progressBar.visibility = View.GONE
 
-            val dataResults = categories?.data?.results
-            val adapterCategory = AdapterCategory(requireContext(),
-                dataResults!!)
-            val recyclerView = binding.recyclerViewCategories
-            recyclerView.adapter = adapterCategory
 
-            adapterCategory.setClickListener(object : AdapterCategory.ItemClickListener {
-                override fun onItemClick(
-                    view: View?,
-                    position: Int,
-                    data: List<ListOfCategories>,
-                ) {
+        if (viewModel.myResponseGetListOfCategories.value == null)
+            viewModel.getListOfCategories()
 
-                    val action =
-                        CategoriesFragmentDirections.actionCategoriesFragmentToProductFragment2(
-                            data[position].id
-                        )
-                    findNavController().navigate(action)
+        viewModel.myResponseGetListOfCategories.observe(viewLifecycleOwner) { categories ->
+            if (categories != null) {
+
+
+                progressBar.visibility = View.GONE
+
+                val dataResults = categories?.data?.results
+
+                filter(dataResults) { it.name == "mohamed" }.let { categories ->
 
                 }
-            })
+                val adapterCategory = AdapterCategory(
+                    requireContext(),
+                    dataResults!!
+                )
+                val recyclerView = binding.recyclerViewCategories
+                recyclerView.adapter = adapterCategory
+
+                adapterCategory.setClickListener(object : AdapterCategory.ItemClickListener {
+                    override fun onItemClick(
+                        view: View?,
+                        position: Int,
+                        data: List<ListOfCategories>,
+                    ) {
+
+                        val action =
+                            CategoriesFragmentDirections.actionCategoriesFragmentToProductFragment2(
+                                data[position].id
+                            )
+                        findNavController().navigate(action)
+
+                    }
+                }
+                )
+            }
         }
 
         return view

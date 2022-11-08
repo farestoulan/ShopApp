@@ -45,17 +45,12 @@ class MainViewModel : ViewModel() {
     }
 
 
-    fun getListOfCategories(): MutableLiveData<Categories?> {
-
+    fun getListOfCategories() {
         myResponseGetListOfCategories = Repository.getListOfCategories()
-        return myResponseGetListOfCategories
     }
 
-    fun getListOfProducts(category_id: Int):MutableLiveData<Products?> {
-
+    fun getListOfProducts(category_id: Int) {
         myResponseGetListOfProducts = Repository.getListOfProducts(category_id)
-
-        return myResponseGetListOfProducts
     }
 
 
@@ -72,5 +67,8 @@ class MainViewModel : ViewModel() {
         return myResponseGetCarts
     }
 
-
+    override fun onCleared() {
+        super.onCleared()
+        myResponseGetListOfProducts.value = null
+    }
 }
